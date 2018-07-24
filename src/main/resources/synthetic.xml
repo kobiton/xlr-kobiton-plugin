@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<synthetic xsi:schemaLocation="http://www.xebialabs.com/deployit/synthetic synthetic.xsd" 
+  xmlns="http://www.xebialabs.com/deployit/synthetic" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <type type="kobiton.Task" extends="xlrelease.PythonScript" virtual="true">
+    <property name="iconLocation" default="kobiton/kobiton-logo.png" hidden="true" />
+    <property name="taskColor" hidden="true" default="#ffffff" />
+
+    <property name="kobitonServer" category="input" label="Server" referenced-type="kobiton.Server" kind="ci"/>
+  </type>
+
+  <type type="kobiton.ListDevices" extends="kobiton.Task">
+    <property name="model" category="input" required="false" description="The model of the device. For example: Galaxy S6, iPhone 6, ... . Regex supported."/>
+
+    <property name="devices" category="output" kind="map_string_string" description="List of available devices (deviceId, model, available)."/>
+  </type>
+
+  <type type="kobiton.Server" extends="configuration.HttpConnection" />
+</synthetic>

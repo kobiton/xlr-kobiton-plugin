@@ -1,0 +1,10 @@
+.gradle
+.idea
+.settings
+.vscode
+bin
+build
+venv
+.classpath
+.project
+xlr-kobiton-plugin.iml
