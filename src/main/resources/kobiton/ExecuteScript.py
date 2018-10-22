@@ -7,9 +7,6 @@ apiKey = kobitonServer['apiKey']
 
 remoteServer = kobitonServer['remoteServer']
 
-defaultDeviceOrientation = kobitonServer['deviceOrientation']
-defaultCaptureScreenshots = kobitonServer['captureScreenshots']
-
 def merge_devices():
   mergedList = []
 
@@ -84,8 +81,8 @@ def customizeBodyTemplate():
   try:
     bodyTemplate = {
       'desiredCaps': {
-          'deviceOrientation': deviceOrientation if overrideDesiredCaps else defaultDeviceOrientation,
-          'captureScreenshots': captureScreenshots if overrideDesiredCaps else defaultCaptureScreenshots,
+          'deviceOrientation': deviceOrientation,
+          'captureScreenshots': captureScreenshots,
           'groupId': groupId
       },
       'testScript': {
