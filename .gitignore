@@ -10,3 +10,5 @@ venv
 xlr-kobiton-plugin.iml
 .DS_Store
 lib/*
+
+src/main/resources/kobiton/configs.pyc
