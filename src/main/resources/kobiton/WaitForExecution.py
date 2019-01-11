@@ -3,15 +3,20 @@ import json
 import time
 import sys
 import base64
-import configs
 
 executorServer = kobitonServer['executorServer']
 username = kobitonServer['username']
 apiKey = kobitonServer['apiKey']
 
+testResultStatus = {
+  'success': 'SUCCESS',
+  'error': 'ERROR'
+}
+
 
 def main():
   results = {}
+  logs = {}
 
   # Duplicate jobs list for fetching result
   jobsPool = jobIds.keys()
@@ -22,42 +27,35 @@ def main():
 
   while len(jobsPool) >= 1:
     for id in jobsPool:
-      try:
-        response = getTestExecutionResult(id)
+      response = getTestExecutionResult(id)
       
-        if response['status'] == configs.testResultStatus['error']:
-          results[id] = configs.testResultStatus['error']
-          printError(id, response['message'])
-        
-        elif response['status'] == configs.testResultStatus['success']:
-          results[id] = str(response['message'])
-          
-      except Exception as ex:
-        results[id] = configs.testResultStatus['error']
-        printError(id, ex)
-
+      if 'err' in response:
+        print "Error while fetching test result on {}: {}\n{}".format(id, response['err'], response['msg'])
+      elif response['status'] == 'error':
+        results[id] = testResultStatus['error']
+        logs[id] = response['log']
+      elif response['status'] == 'completed':
+        results[id] = str(response['message'])
+        logs[id] = response['log']
+    
     # Remove job id from pool when it got result
     for jobId in results:
-      index = jobsPool.index(jobId)
-      del jobsPool[index]
+      if jobId in jobsPool:
+        index = jobsPool.index(jobId)
+        del jobsPool[index]
 
     # Delay to avoid DDOS
     if len(jobsPool) > 0:
       time.sleep(30)
-  
-  return results
 
-# Format error message to display
-def printError(id, err):
-  print 'Error - ' + id + '\n'
-  print '--------------------------\n'
-  print err
-  print '--------------------------\n'
+  printResultLogs(logs)
+
+  return results
 
 
 def terminateTaskProcessWhenFail(testResult):
   for resultMessage in testResult.values():
-    if resultMessage == configs.testResultStatus['error'] and isExitWhenFail:
+    if resultMessage == testResultStatus['error'] and isExitWhenFail:
       sys.exit(1)
 
 
@@ -69,8 +67,22 @@ def getTestExecutionResult(jobId):
 
   url = executorServer + '/' + jobId + '/status'
   request = urllib2.Request(url, headers=headers)
-  response = urllib2.urlopen(request)
-  return json.loads(response.read())
+  try:
+    response = urllib2.urlopen(request)
+  except urllib2.HTTPError as e:
+    return {'err': e, 'msg': e.read()}
+  except urllib2.URLError as e:
+    return {'err': e, 'msg': 'Cannot reach to executor server.'}
+  else:
+    body = response.read()
+    return json.loads(body)
+
+
+def printResultLogs(logs):
+  for jobId in logs:
+    print jobId  
+    print '-------------------------------------------'
+    print 'Logs url of ' + jobId + ' - ' + logs[jobId] 
 
 
 # Execute task

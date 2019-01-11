@@ -2,13 +2,12 @@ import json
 import re
 import urllib2
 import copy
-import configs
 
-apiServer = kobitonServer['url']
+apiServer = kobitonServer['apiServer']
 username = kobitonServer['username']
 apiKey = kobitonServer['apiKey']
 
-deviceGroups = {
+inputDevicesGroups = {
   'cloudDevices': isCloud,
   'privateDevices': isPrivate,
   'favoriteDevices': isFavorite
@@ -20,18 +19,16 @@ platformOptions = {
 }
 
 def getAvailableDevices():
-  try:
-    devicesFetchingParams = getDevicesFetchingParams(customFetchingParams, platformOptions, groupId)
-    rawDevicesList = getDevicesList(devicesFetchingParams)
-
-    filteredDevicesList = filterDevices(deviceGroups, rawDevicesList) 
-    print str(filteredDevicesList)
-
-  except Exception as error:
-    print 'Failed to get devices list ' + str(error)
-  finally:
-    return filteredDevicesList
-
+  filteredDevicesList = {}
+  devicesFetchingParams = getDevicesFetchingParams(customFetchingParams, platformOptions, groupId)
+  rawDevicesList = getDevicesList(devicesFetchingParams)
+  if 'err' in rawDevicesList:
+    print "Error while fetching devices on: {}\n{}".format(rawDevicesList['err'], rawDevicesList['msg'])
+  else:
+    filteredDevicesList = filterDevices(inputDevicesGroups, rawDevicesList)
+  
+  return filteredDevicesList
+  
 
 def getDevicesFetchingParams(customFetchingParams, platformOptions, groupId):
   devicesFetchingParams = {}
@@ -42,10 +39,10 @@ def getDevicesFetchingParams(customFetchingParams, platformOptions, groupId):
 
   # Add require params for fetching devices
   platformFilterParam = getDevicesPlatformParams(platformOptions)
-  if (platformFilterParam):
+  if platformFilterParam:
     devicesFetchingParams['platformName'] = platformFilterParam
 
-  if (groupId):
+  if groupId:
     devicesFetchingParams['groupId'] = groupId
 
   # Add default value for fetching list available devices
@@ -68,8 +65,15 @@ def getDevicesList(params):
   }
 
   request = urllib2.Request(url, headers=header)
-  response = urllib2.urlopen(request)
-  return json.loads(response.read())
+  try:
+    response = urllib2.urlopen(request)
+  except urllib2.HTTPError as e:
+    return {'err': e, 'msg': e.read()}
+  except urllib2.URLError as e:
+    return {'err': e, 'msg': 'Cannot reach to kobiton api server.'}
+  else:
+    body = response.read()
+    return json.loads(body)
 
 
 def getDevicesPlatformParams(platformOptions):
@@ -79,19 +83,20 @@ def getDevicesPlatformParams(platformOptions):
     if platformOptions[platformName]:
       selectedPlatform.append(platformName)
 
-  if (len(selectedPlatform) < 1):
+  if len(selectedPlatform) < 1:
     raise ValueError('No devices platform is selected, cannot get devices.')
-  elif (len(selectedPlatform) == 1):
+  elif len(selectedPlatform) == 1:
     # Since default will get both Android and iOS,
     # this will return one selected plaform type
     return selectedPlatform[0]
 
 
 def getCustomParams(customFetchingParams):
+  listIgnoreCustomeParams = ['isBooked', 'isOnline', 'appiumDisabled', 'platformName', 'groupId']
   customParams = {}
 
   for params in customFetchingParams:
-    if params not in configs.listIgnoreCustomeParams:  # Ignore these params since this task will use default value or avoid duplication
+    if params not in listIgnoreCustomeParams:  # Ignore these params since this task will use default value or avoid duplication
       customParams[params] = customFetchingParams[params]
 
   return customParams
@@ -101,11 +106,11 @@ def getBasicAuth():
   return 'Basic ' + (username + ':' + apiKey).encode('base64').rstrip()
 
 
-def filterDevices(deviceGroups, rawDevicesList):
+def filterDevices(inputDeviceGroups, rawDevicesList):
   formattedDevicesData = {}
 
-  for group in deviceGroups:
-    if deviceGroups[group]:
+  for group in inputDeviceGroups:
+    if inputDeviceGroups[group]:
       for device in rawDevicesList[group]:
         udid = device['udid']
         if formattedDevicesData.get(udid) is None:
@@ -115,10 +120,10 @@ def filterDevices(deviceGroups, rawDevicesList):
 
 
 def formatDeviceData(device):
-  deviceGroup = configs.deviceGroup['cloud']
+  deviceGroup = 'Kobiton Cloud'
 
   if device['isMyOwn']:
-    deviceGroup = configs.deviceGroup['inHouse']
+    deviceGroup = 'In-house'
 
   return device['deviceName'] + ' | ' + device['platformName'] + ' | ' + device['platformVersion'] + ' | ' + deviceGroup
 

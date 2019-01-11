@@ -8,7 +8,7 @@
     <property name="username" label="Kobiton Username" category="input" required="true" description="Your Kobiton Username" />
     <property name="apiKey" label="Kobiton Api Key" password="true" category="input" required="true" description="Your Kobiton API Key" />
     <property name="apiServer" label="Kobiton Api Url" category="input" required="true" default="https://api.kobiton.com" description="Kobiton URL used to consume API"/>
-    <property name="executorServer" label="Executor Server Url" category="input" default="https://executor.kobiton.com:4545" required="true" description="Executor server domain for receiving requests." />
+    <property name="executorServer" label="Executor Server Url" category="input" default="https://executor.kobiton.com" required="true" description="Executor server domain for receiving requests." />
   </type>
 
   <type type="kobiton.Task" extends="xlrelease.PythonScript" virtual="true">
@@ -24,8 +24,8 @@
     <property name="isFavorite" label="Favorite Devices" category="input" kind="boolean" required="false" description="Select only favorite devices"/>    
     <property name="isPrivate" label="In-house Devices" category="input" kind="boolean" required="false" description="Select only private devices"/>
     <property name="isCloud" label="Cloud Devices" category="input" kind="boolean" required="false" description="Select only cloud devices"/>
-    <property name="isAndroid" label="Android Devices" category="input" kind="boolean" required="false" description="Select Android devices"/>
-    <property name="isiOS" label="iOS Devices" category="input" kind="boolean" required="false" description="Select iOS devices"/>    
+    <property name="isAndroid" label="Android Devices" category="input" kind="boolean" default="true" required="false" description="Select Android devices"/>
+    <property name="isiOS" label="iOS Devices" category="input" kind="boolean" default="true" required="false" description="Select iOS devices"/>    
     <property name="groupId" label="Group ID" category="input" required="false" description="Your group ID."/>
     <property name="customFetchingParams" label="Custom params" category="input" kind="map_string_string" required="false" description="Add custom params to fetch devices" />
     <property name="devices" label="Devices List" category="output" kind="map_string_string" description="List of available devices (Device Name, Platform Name, Device UDID and device group)."/>
@@ -39,7 +39,7 @@
     <property name="inputDevicesUdid" label="In-House devices udid" category="input" kind="list_of_string" required="false" description="Input list of devices udids" />
 
     <!-- DesiredCaps -->
-    <property name="captureScreenshots" label="Capture Screenshots" category="input" kind="boolean" required="false" description="Value captureScreenshots in your Desired Capabilites" />
+    <property name="captureScreenshots" label="Capture Screenshots" category="input" kind="boolean" default="true" required="false" description="Value captureScreenshots in your Desired Capabilites" />
     <property name="deviceOrientation" label="Orientation" category="input" kind="enum" default="Portrait" required="false"
       description="Value of deviceOrientation in your Desired Capabilites">
       <enum-values>
@@ -64,8 +64,9 @@
     <property name="appUrl" label="App URL/App ID" category="input" required="false" description="Your app's public URL or Kobiton App ID. Required if you chose to test on apps." />
     <property name="groupId" label="Group ID" category="input" required="false" description="Your group ID." />
     <property name="gitUrl" label="Git Repository" category="input" required="true" description="URL to your Git repository that contains automation test scripts." />
+    <property name="branch" label="Execute branch" category="input" required="true" default="master" description="Branch that your script will execute on." />
     <property name="ssh" label="Private repository SSH Key" category="input" required="false" size="large" description="SSH to access your private Git repository." />
-    <property name="config" label="Configuration Commands" category="input" required="true" size="large" description="Commands to execute automation test (yaml)." />
+    <property name="configCmds" label="Configuration Commands" category="input" required="true" default="commands:" size="large" description="Commands to execute automation test (yaml)." />
     <property name="jobIds" label="Job IDs" category="output" kind="map_string_string" description="List of Job IDs on each devices" />
   </type>
 

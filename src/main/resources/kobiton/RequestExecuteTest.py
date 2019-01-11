@@ -2,7 +2,6 @@ import urllib2
 import json
 import copy
 import base64
-import configs
 
 executorServer = kobitonServer['executorServer']
 username = kobitonServer['username']
@@ -25,7 +24,7 @@ def mergeDevicesInput():
 
         # All device componets will defined as
         # [<Device name>, <Device Platform>, <Platform version>, <Devices group>]
-        if deviceComponents[3] == configs.deviceGroup['inHouse']:
+        if deviceComponents[3] == 'In-house':
           deviceData = {
             'udid': deviceUdid,
           }
@@ -44,41 +43,44 @@ def mergeDevicesInput():
 def executionHandler(listDevicesData): 
   executionJobIds = {}
 
-  if not listDevicesData:
+  if len(listDevicesData) < 1:
     print 'No device to execute tests.'
     return
 
   executionOptions = getTestExecutionOptions()
-  
+
   for device in listDevicesData:
-    try:
       executionOptions['desiredCaps'].update(device)
-      eId = sendExecuteTestRequest(executionOptions)
-
-      # Display in output
-      # Showing usid of devices if user using private
-      if device.has_key('udid'):
-        executionJobIds[eId] = device['udid']
+      response = sendExecuteTestRequest(executionOptions)
+      if 'err' in response:
+        errorDevice = device['deviceName'] if 'udid' not in device else device['udid']
+        print "Error while executing test on {} : {}\n{}".format(errorDevice, response['err'], response['msg'])
       else:
-        executionJobIds[eId] = device['deviceName']
-
-    except Exception as ex:
-      errorDevice = device['deviceName'] if 'udid' not in device else device['udid']
-      print "Error while executing test on {} : {}".format(errorDevice, ex)
+        # Display in output
+        # Showing usid of devices if user using private
+        if device.has_key('udid'):
+          executionJobIds[response] = device['udid']
+        else:
+          executionJobIds[response] = device['deviceName']
 
   return executionJobIds
+
 
 def sendExecuteTestRequest(requestBody):
   headers = {
     'Content-type': 'application/json',
     'Authorization': 'Basic %s' % base64.b64encode('%s:%s' % (username, apiKey))
   }
-  url = executorServer + '/submit'
-
-  request = urllib2.Request(url, json.dumps(requestBody), headers=headers)
-  response = urllib2.urlopen(request)
-  body = response.read()
-  return body
+  request = urllib2.Request(executorServer + '/submit', json.dumps(requestBody), headers=headers)
+  try:
+    response = urllib2.urlopen(request)
+  except urllib2.HTTPError as e:
+    return {'err': e, 'msg': e.read()}
+  except urllib2.URLError as e:
+    return {'err': e, 'msg': 'Cannot reach to executor server.'}
+  else:
+    body = response.read()
+    return json.loads(body)
 
 
 def getTestExecutionOptions():
@@ -94,19 +96,20 @@ def getTestExecutionOptions():
       'testConfig': {
           'git': gitUrl,
           'ssh': ssh,
-          'commands': config
+          'branch': branch,
+          'commands': configCmds
       }
     }
 
-    if testType == 'App':
+    if executionType == 'App':
       template['desiredCaps']['app'] = appUrl
-    elif testType == 'Browser':
+    elif executionType == 'Browser':
       template['desiredCaps']['browserName'] = browserName.lower()
       
   except Exception as ex:
     print "Error while executing test: " + ex 
-
   return template
+
 
 # Execute task
 listDevicesData = mergeDevicesInput()
