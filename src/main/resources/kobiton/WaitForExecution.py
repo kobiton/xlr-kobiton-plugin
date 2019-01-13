@@ -18,13 +18,13 @@ def main():
   results = {}
   logs = {}
 
-  # Duplicate jobs list for fetching result
-  jobsPool = jobIds.keys()
-
-  if len(jobIds) == 0:
+  if not jobIds:
     print 'No Jobs for waiting.'
     return
 
+  # Duplicate jobs list for fetching result
+  jobsPool = jobIds.keys()
+   
   while len(jobsPool) >= 1:
     for id in jobsPool:
       response = getTestExecutionResult(id)
@@ -82,7 +82,7 @@ def printResultLogs(logs):
   for jobId in logs:
     print jobId  
     print '-------------------------------------------'
-    print 'Logs url of ' + jobId + ' - ' + logs[jobId] 
+    print 'Logs url - ' + logs[jobId] 
 
 
 # Execute task
