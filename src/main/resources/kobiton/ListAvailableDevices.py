@@ -2,6 +2,7 @@ import json
 import re
 import urllib2
 import copy
+import sys
 
 apiServer = kobitonServer['apiServer']
 username = kobitonServer['username']
@@ -18,8 +19,21 @@ platformOptions = {
   'iOS': isiOS
 }
 
+def checkInputValues():
+  checkDevicesGroupSelected = inputDevicesGroups.values()
+  if True not in checkDevicesGroupSelected:
+    print "Error, cannot get list available devices because there are no devices group selected."
+    return sys.exit(1)
+    
+  checkSelectedPlatform = platformOptions.values()
+  if True not in checkSelectedPlatform:
+    print "Error, cannot get list available devices because there are no devices platform selected."
+    return sys.exit(1)
+
+
 def getAvailableDevices():
   filteredDevicesList = {}
+
   devicesFetchingParams = getDevicesFetchingParams(customFetchingParams, platformOptions, groupId)
   rawDevicesList = getDevicesList(devicesFetchingParams)
   if 'err' in rawDevicesList:
@@ -28,7 +42,7 @@ def getAvailableDevices():
     filteredDevicesList = filterDevices(inputDevicesGroups, rawDevicesList)
   
   return filteredDevicesList
-  
+
 
 def getDevicesFetchingParams(customFetchingParams, platformOptions, groupId):
   devicesFetchingParams = {}
@@ -134,8 +148,11 @@ def formatParams(devicesFetchingParams):
   for param in devicesFetchingParams:
     formattedParams += param + '=' + str(devicesFetchingParams[param]) + '&'
 
+  formattedParams = formattedParams.replace(" ", "%20")
   return formattedParams[:-1] # Remove last char '&' to avoid Forbidden Error
 
 
 # Execute task
-devices = getAvailableDevices()
+canExecuteTask = checkInputValues()
+if canExecuteTask:
+  devices = getAvailableDevices()
