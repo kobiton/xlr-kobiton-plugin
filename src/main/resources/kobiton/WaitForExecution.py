@@ -20,7 +20,7 @@ def main():
 
   if not jobIds:
     print 'No Jobs for waiting.'
-    return
+    return False
 
   # Duplicate jobs list for fetching result
   jobsPool = jobIds.keys()

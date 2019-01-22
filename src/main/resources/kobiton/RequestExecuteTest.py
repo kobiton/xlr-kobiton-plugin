@@ -2,6 +2,7 @@ import urllib2
 import json
 import copy
 import base64
+import sys
 
 executorServer = kobitonServer['executorServer']
 username = kobitonServer['username']
@@ -16,26 +17,29 @@ def mergeDevicesInput():
   for udid in inputDevicesUdid:
     listDevices.append({'udid': udid})
 
-  if availableDevices:
-    for deviceUdid in availableDevices:
-      if deviceUdid not in inputDevicesUdid: # Avoid duplication
+  for deviceUdid in availableDevices:
+    if deviceUdid not in inputDevicesUdid: # Avoid duplication
 
-        deviceComponents = availableDevices[deviceUdid].split(' | ')
+      deviceComponents = availableDevices[deviceUdid].split(' | ')
 
-        # All device componets will defined as
-        # [<Device name>, <Device Platform>, <Platform version>, <Devices group>]
-        if deviceComponents[3] == 'In-house':
-          deviceData = {
-            'udid': deviceUdid,
-          }
-        else:
-          deviceData = {
-            'deviceName' : deviceComponents[0],
-            'platformName': deviceComponents[1],
-            'platformVersion': deviceComponents[2]
-          }
+      # All device componets will defined as
+      # [<Device name>, <Device Platform>, <Platform version>, <Devices group>]
+      if deviceComponents[3] == 'In-house':
+        deviceData = {
+          'udid': deviceUdid,
+        }
+      else:
+        deviceData = {
+          'deviceName' : deviceComponents[0],
+          'platformName': deviceComponents[1],
+          'platformVersion': deviceComponents[2]
+        }
 
-        listDevices.append(deviceData)
+      listDevices.append(deviceData)
+
+  if not listDevices:
+    print "No devices found to execute Test"
+    return False
 
   return listDevices
 
@@ -113,4 +117,7 @@ def getTestExecutionOptions():
 
 # Execute task
 listDevicesData = mergeDevicesInput()
-jobIds = executionHandler(listDevicesData)
+if listDevicesData:
+  jobIds = executionHandler(listDevicesData)
+else:
+  sys.exit(1)

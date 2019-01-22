@@ -23,12 +23,14 @@ def checkInputValues():
   checkDevicesGroupSelected = inputDevicesGroups.values()
   if True not in checkDevicesGroupSelected:
     print "Error, cannot get list available devices because there are no devices group selected."
-    return sys.exit(1)
+    return False
     
   checkSelectedPlatform = platformOptions.values()
   if True not in checkSelectedPlatform:
     print "Error, cannot get list available devices because there are no devices platform selected."
-    return sys.exit(1)
+    return False
+  
+  return True
 
 
 def getAvailableDevices():
@@ -156,3 +158,5 @@ def formatParams(devicesFetchingParams):
 canExecuteTask = checkInputValues()
 if canExecuteTask:
   devices = getAvailableDevices()
+else:
+  sys.exit(1)
