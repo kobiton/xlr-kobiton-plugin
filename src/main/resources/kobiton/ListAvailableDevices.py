@@ -2,110 +2,161 @@ import json
 import re
 import urllib2
 import copy
+import sys
 
-api_server = kobitonServer['url']
+apiServer = kobitonServer['apiServer']
 username = kobitonServer['username']
-api_key = kobitonServer['apiKey']
+apiKey = kobitonServer['apiKey']
 
-group_options = {
+inputDevicesGroups = {
   'cloudDevices': isCloud,
   'privateDevices': isPrivate,
   'favoriteDevices': isFavorite
 }
 
-platform_options = {
+platformOptions = {
   'Android': isAndroid,
-  'iOS': isiOs
+  'iOS': isiOS
 }
 
-devices = {}
-
-
-def get_devices_list():
-  filtered_list = {}
-  try:
-    devices_list = get_all_devices()
-    filtered_list = devices_filter(group_options, devices_list)
-  except Exception as error:
-    print 'Failed to get devices list ' + str(error)
-  finally:
-    return filtered_list
-
-
-def get_all_devices():
-  auth_token = create_basic_authentication_token()
-  url = api_server + '/v1/devices'
-  
-  if groupId:
-    url += '?groupId=' + groupId
+def checkInputValues():
+  checkDevicesGroupSelected = inputDevicesGroups.values()
+  if True not in checkDevicesGroupSelected:
+    print "Error, cannot get list available devices because there are no devices group selected."
+    return False
     
-  header = {
-    "Content-Type": "application/json",
-    "Authorization": auth_token
-  }
-  request = urllib2.Request(url, headers=header)
-  response = urllib2.urlopen(request)
-  body = response.read()
-  return json.loads(body)
+  checkSelectedPlatform = platformOptions.values()
+  if True not in checkSelectedPlatform:
+    print "Error, cannot get list available devices because there are no devices platform selected."
+    return False
+  
+  return True
 
 
-def create_basic_authentication_token():
-  s = username + ":" + api_key
-  return "Basic " + s.encode("base64").rstrip()
+def getAvailableDevices():
+  filteredDevicesList = {}
 
-
-def devices_filter(group_options, devices_list=[]):
-  classified_list = {}
-
-  for option in group_options:
-    if group_options[option]:
-      for device in devices_list[option]:
-        if device_matches_filter(device) and classified_list.get(device['udid']) is None:
-          classified_list.update(serialize_device(device))
-
-  return classified_list
-
-
-def device_matches_filter(device):
-  return device_is_available(device) and device_has_matching_platform(device) and device_contains_name(device)
-
-
-def device_is_available(device):
-  return device['isOnline'] and not device['isBooked']
-
-
-def device_has_matching_platform(device):
-  return platform_options[device['platformName']]
-
-
-def device_contains_name(device):
-  if not model:
-    return True
-
-  search_list = model.split(',')
-  devices_name = filter(lambda x: x != '' and not x.isspace(), search_list)
-
-  if len(devices_name) == 0:
-    return True
-
-  for name in devices_name:
-    if re.search(name, device['deviceName'], re.IGNORECASE):
-      return True
-
-  return False
-
-
-def serialize_device(device):
-  if device['isCloud']:
-    deviceGroup = 'cloudDevices'
+  devicesFetchingParams = getDevicesFetchingParams(customFetchingParams, platformOptions, groupId)
+  rawDevicesList = getDevicesList(devicesFetchingParams)
+  if 'err' in rawDevicesList:
+    print "Error while fetching devices on: {}\n{}".format(rawDevicesList['err'], rawDevicesList['msg'])
   else:
-    deviceGroup = 'privateDevices'
+    filteredDevicesList = filterDevices(inputDevicesGroups, rawDevicesList)
+  
+  return filteredDevicesList
 
-  device_data = str().join([device['deviceName'], ' | ', device['platformName'], ' | ', device['platformVersion'], ' | ', deviceGroup])
-  serialized_device = {
-    device['udid']: str(device_data)
+
+def getDevicesFetchingParams(customFetchingParams, platformOptions, groupId):
+  devicesFetchingParams = {}
+  
+  # Add custom params that declare from user
+  customParams = getCustomParams(customFetchingParams)
+  devicesFetchingParams.update(customParams)
+
+  # Add require params for fetching devices
+  platformFilterParam = getDevicesPlatformParams(platformOptions)
+  if platformFilterParam:
+    devicesFetchingParams['platformName'] = platformFilterParam
+
+  if groupId:
+    devicesFetchingParams['groupId'] = groupId
+
+  # Add default value for fetching list available devices
+  devicesFetchingParams.update({
+    'isBooked': False,
+    'isOnline': True,
+    'appiumDisabled': False
+  })
+  # Format devices data for better looking
+  return formatParams(devicesFetchingParams)
+
+
+def getDevicesList(params):
+  auth_token = getBasicAuth()
+  url =  re.sub(r'\/$|\\$','', apiServer) + '/v1/devices' + params
+
+  header = {
+    'Content-Type': 'application/json',
+    'Authorization': auth_token
   }
 
-  return serialized_device
+  request = urllib2.Request(url, headers=header)
+  try:
+    response = urllib2.urlopen(request)
+  except urllib2.HTTPError as e:
+    return {'err': e, 'msg': e.read()}
+  except urllib2.URLError as e:
+    return {'err': e, 'msg': 'Cannot reach to kobiton api server.'}
+  else:
+    body = response.read()
+    return json.loads(body)
 
-devices = get_devices_list()
+
+def getDevicesPlatformParams(platformOptions):
+  selectedPlatform = []
+
+  for platformName in platformOptions:
+    if platformOptions[platformName]:
+      selectedPlatform.append(platformName)
+
+  if len(selectedPlatform) < 1:
+    raise ValueError('No devices platform is selected, cannot get devices.')
+  elif len(selectedPlatform) == 1:
+    # Since default will get both Android and iOS,
+    # this will return one selected plaform type
+    return selectedPlatform[0]
+
+
+def getCustomParams(customFetchingParams):
+  listIgnoreCustomeParams = ['isBooked', 'isOnline', 'appiumDisabled', 'platformName', 'groupId']
+  customParams = {}
+
+  for params in customFetchingParams:
+    if params not in listIgnoreCustomeParams:  # Ignore these params since this task will use default value or avoid duplication
+      customParams[params] = customFetchingParams[params]
+
+  return customParams
+
+
+def getBasicAuth():
+  return 'Basic ' + (username + ':' + apiKey).encode('base64').rstrip()
+
+
+def filterDevices(inputDeviceGroups, rawDevicesList):
+  formattedDevicesData = {}
+
+  for group in inputDeviceGroups:
+    if inputDeviceGroups[group]:
+      for device in rawDevicesList[group]:
+        udid = device['udid']
+        if formattedDevicesData.get(udid) is None:
+          formattedDevicesData[udid] = formatDeviceData(device)
+          
+  return  formattedDevicesData
+
+
+def formatDeviceData(device):
+  deviceGroup = 'Kobiton Cloud'
+
+  if device['isMyOwn']:
+    deviceGroup = 'In-house'
+
+  return device['deviceName'] + ' | ' + device['platformName'] + ' | ' + device['platformVersion'] + ' | ' + deviceGroup
+
+
+def formatParams(devicesFetchingParams):
+  formattedParams = '?'
+
+  for param in devicesFetchingParams:
+    formattedParams += param + '=' + str(devicesFetchingParams[param]) + '&'
+
+  formattedParams = formattedParams.replace(" ", "%20")
+  return formattedParams[:-1] # Remove last char '&' to avoid Forbidden Error
+
+
+# Execute task
+canExecuteTask = checkInputValues()
+if canExecuteTask:
+  devices = getAvailableDevices()
+else:
+  sys.exit(1)
