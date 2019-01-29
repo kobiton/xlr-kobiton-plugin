@@ -89,7 +89,7 @@ This task will help to fetch all available (online) devices data that user can a
 | ----- | -------- | ---- |----------- |
 |Favorite/In-house/Cloud Devices| Yes | Checkbox | The group containing devices that you want to use for automation test.<br> Note: You must choose at least 1 of these 3 options. |
 |Android/iOS Devices| Yes | Checkbox | Mobile device OS that you want to get list. <br>Note: you must choose at least 1 of these 2 options. |
-| Group Id | No | String | The ID of a specific group you want to get devices from.  For GroupID information, you can visit [Kobiton group setting](https://docs.kobiton.com//organization-management/automation-for-groups/default-group-setting/). |
+| Group Id | No | String | The ID of a specific organization group you want to get devices from.  For GroupID information, you can visit [Kobiton group setting](https://docs.kobiton.com//organization-management/automation-for-groups/default-group-setting/). |
 | Custom Params | No | Object | Filter devices list based on params provided in [Kobiton Api docs](https://api.kobiton.com/docs/#get-all-devices) |
 
 For more details of **Custom Params**, we can select specific devices properties such as device name, device model, device udid, etc. 
@@ -101,7 +101,7 @@ Take an example, we want to select only **Galaxy S8** devices, we can specify in
 
 > Note: please choose some specific devices by using custom params. Because the next task will pick all devices in this output to execute test one by one. 
 
-| Step | Image | 
+| Step | Image |
 | ---- | ----- |
 | Type in textbox the variable's name you want to save | ![output list](./readme/outputlist0.png) |
 | Click at the row below `${} Create a new varaible of type key-value map` to create varaible |  ![output list](./readme/outputlist1.png) |
@@ -134,7 +134,7 @@ This is the task used for requesting Kobiton server to execute your test.
 |Test execution type|Yes|Selection|Execute an automation test on app or browser<br>If you choose **App**, just ignore all the config for browser and the same for the opposite|
 |Browser|No|Selection|Type of browser: Chrome (android) or Safari (iOs). Required if you chose to test on browser.|
 |App URL/App ID|No|String|Your app's public URL or Kobiton App ID. Required if you chose to test on apps.|
-|Group ID|No|String|The ID of a specific group you want to get devices from. For GroupID information, you can visit [Kobiton group setting](https://docs.kobiton.com//organization-management/automation-for-groups/default-group-setting/).|
+|Group ID|No|String|The ID of a specific organization group you want to get devices from. For GroupID information, you can visit [Kobiton group setting](https://docs.kobiton.com//organization-management/automation-for-groups/default-group-setting/).|
 |Git repository|Yes|String|URL to your Git repository that contains automation test scripts.|
 |Execute branch|No|String|Select the branch contain your script, default is master.<br>**Note**: You cannot choose other branch the commands fields. |
 |Private repository SSH Key|Yes|String|Copy whole of file of your private SSH key and paste to this section for authenticating with git server.|
