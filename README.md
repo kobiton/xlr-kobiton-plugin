@@ -1,130 +1,120 @@
 # The Kobiton plugin for XebiaLabs XL Release product
 
-This XL release Kobiton plugin allows XL Release to interact with [Kobiton](https://portal.kobiton.com). We now support these feature tasks in order to execute automated test:
-* Get list of online devices which are ready to run test.
-* Execute test on devices with prepared test script.
-* Collect report from test execution.
+Kobiton plugin help users to run automation test on Kobiton devices, remotely and automatically from XL release platform. Kobiton plugin can apply for uses:
+- Users indie using Kobiton services
+- User hosting private server
+- On-Premises.
 
-# Table of content
-- [The Kobiton plugin for XebiaLabs XL Release product](#the-kobiton-plugin-for-xebialabs-xl-release-product)
-- [Table of content](#table-of-content)
-  - [Set up with Kobiton server](#set-up-with-kobiton-server)
-    - [A. Preparation](#a-preparation)
-      - [1. Getting Kobiton Username and API key](#1-getting-kobiton-username-and-api-key)
-      - [2. Getting SSH key for private repository](#2-getting-ssh-key-for-private-repository)
-    - [B. Configuration](#b-configuration)
-  - [Set up release/phrase for Kobiton](#set-up-release-phrase-for-kobiton)
-    - [A. General](#a-general)
-    - [B. Task](#b-task)
-      - [1. List Available Devices](#1-list-available-devices)
-      - [2. Request Execute Test](#2-request-execute-test)
-      - [3. Wait for Execution](#3-wait-for-execution)
-  - [Start release/phrase](#start-release-phrase)
-  - [Results from tasks](#results-from-tasks)
-      - [1. List Available Devices](#1-list-available-devices)
-      - [2. Request Execute Test](#2-request-execute-test)
-      - [3. Wait for Execution](#3-wait-for-execution)
-___
-## Set up with Kobiton server
-### A. Preparation
-#### 1. Getting Kobiton Username and API key
-Kobiton Username and API key are required for authenticating with Kobiton API.
+For the current version, Kobiton plugin just support executing test through tasks in a **Release** job in XL Release. 
+
+## Featured tasks
+From the plugin, we provided features to execute automation test easier:
+- Get list available devices: Filter and fetch data of devices that users can access in Kobiton 
+- Request execute test: Request and execute test on provided devices data and test script in Kobiton system
+- Wait for execution: Fetch result and log from requested test.
+
+## Preparation
+### A. Getting Kobiton Username and API key
+Kobiton Username and API key are required for authenticating with Kobiton System to executing test.
 
 > If you don't have a Kobiton account, visit https://portal.kobiton.com/register to create one.
 
-To get your Kobiton Username and API Key, follow instructions at `IV. Configure Test Script for Kobiton` section on [our blog](https://kobiton.com/blog/tutorial/parallel-testing-selenium-webdriver/)
+To get your Kobiton Username and API Key, please follow instructions at `IV. Configure Test Script for Kobiton` section on [our blog](https://kobiton.com/blog/tutorial/parallel-testing-selenium-webdriver/)
 
-#### 2. Getting SSH key for private repository 
-For executing automated test, Kobiton plugin supports test script stored on a Github repository. Therefore, this requires a SSH key for authenticating with your private repository on Github.
+### B. Getting SSH key for private repository 
 
-> If you haven't had SSH key yet, please visit follow [Github SSH key instruction](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/) to create one.
+For executing test, Kobiton plugin require test script to be stored in **git** repository and Kobiton must have permission to access and clone the script to local for executing.
 
-> Note: for security, Kobiton plugin are not support passphrase for SSH key. Please, notice this when you generate SSH key.
-___
-### B. Configuration
+> Note: All of your private information such as test script, sshkey, etc. will be deleted after processing is completed. 
+
+- **For user using test script in public repository**: Use the http link directly to the git input field (we will show in the `**request executing test** task)
+
+- **For user using test script in private reposiotry**: Kobiton require a **ssh key** (private key) to authenticate with git.
+
+    - The ssh key must be authenticated with git repository and it should not contain passphrase. 
+    > If you do not know how to authenticate the key with git, please follow the guide from [Github create SSH key instruction](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/) and [Github adding key to account instruction](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/)
+
+## Using Kobiton plugin
+### A. Global configuration
 
 1. In the XL Release home page, go to __Settings > Shared configuration > Kobiton: Server >__    ![](./readme/button1.png)
 
-<img src="./readme/step2.png" alt="step2" width="600">
+![step 2](./readme/step2.png)
 
-2. These are some information you need to fill in
+2. Fill all information to identify Kobiton servers
 
     |Section|Description|
     | -----------------| --------------- |
-    | Title            | Enter the name of your Kobiton Server |
+    | Title            | Enter the name of your Kobiton Server<br>Example: `Kobiton` |
     | Kobiton Username | Enter your Kobiton username |
-    | Kobiton Api Key  | Enter Api key of your Kobiton account |
-    | Kobiton Api Url  | Enter the url of Kobiton Api: `https://api.kobiton.com` |
-    | Executor Server Url | Enter the url connect to Executor Server: `https://executor.kobiton.com` |
+    | Kobiton API Key  | Enter API key of your Kobiton account |
+    | Kobiton API Url  | Enter the url of Kobiton Api: `https://api.kobiton.com`<br>For on premise or private hosting user, you can enter your host url here. |
+    | Executor Server Url | Enter the url connect to Executor Server: `https://executor.kobiton.com`<br>For on premise or private hosting user, you can enter your host url here. |
 
-<img src="./readme/step3.png" alt="step3" width="600">
+![step 3](./readme/step3.png)
 
 When all fills are filled as above, you can test the connection with Kobiton Server by pressing button ![button2](./readme/button2.png).
 
-3. Only if it notices `Kobiton Server is available` as below, that means all your information is correct and XL Release is available to connect with Kobiton. Pleas press **Save** to apply. 
+3. Only if it notices `Kobiton Server is available` as below, which means all your information is correct and XL Release can connect to Kobiton. Pleas press **Save** button to apply the config. 
 
-    <img src="./readme/serverconnected.png" alt="serverconnected" width="300">
+    ![server connected](./readme/serverconnected.png)
 
-> Note: when an error is shown that cannot connect to Api or Executor server, please make sure your information is correct and you are availble to access internet. If you make everything right but cannot access to Kobiton Server, contact us for more detail.
-___
-## Set up release/phrase for Kobiton
+> **Note**: 
+> 
+> - When an error is shown that cannot connect to Api or Executor server, please make sure your information is correct and you are availble to access internet. 
+>
+> - If you make everything right but cannot access to Kobiton Server, please contact us for more detail.
 
-### A. General 
+### B. Kobiton plugin tasks
 
-* From home page choose __> Release__. If you haven't had a release yet, choose __> New release__ to create one. 
+* From home page choose __> Release__. Choose any release that you want to run Kobiton pluginm, if you haven't had a release yet, choose __> New release__ to create one. 
 
-<img src="./readme/release.png" alt="release" width="600"/>
+![release](./readme/release.png)
 
-* When a release is created, a new phrase shown on. Choose __> Add task > Manual > Kobiton > Choose task you want to start__
-    
-    <img src="./readme/addtask.png" alt="addtask" width="300"/>
+*  In each release we will see the Phrase widget in the release. Choose __> Add task > Manual > Kobiton__ and you will see all the Kobiton plugin there. 
 
-### B. Task
+    ![add task](./readme/addtask.png)
+
+The fully detail of plugin will show in the below sessions.
 Kobiton Plugin now supports 3 tasks on XL Release enviroment:
 
 #### 1. List Available Devices
-This task is used to get a list of available(online) devices on Kobiton environment. You can custom the task to have a specific devices-list as your requirements.
+This task will help to fetch all available (online) devices data that user can access. The data can pass as environment for other tasks to be consumed. 
 
 <img src="./readme/listdevices1.png" alt="listdevices1" width="600">
 
-* Input properties:
+* **Input properties**:
 
-    | Field | Required | Type | Description |
-    | ----- | -------- | ---- |----------- |
-    |Favorite/In-house/Cloud Devices| Yes | Tick box | The group containing devices that you want to use for automation test. Note: you must choose at least 1 of these 3 options. |
-    |Android/iOS Devices| Yes | Tick box | Mobile device OS that you want to get list. Note: you must choose at least 1 of these 2 options. |
-    | Group Id | No | String | The ID of a specific group you want to get devices from. Default, it will be "Default Group". For GroupID information, you can visit [Kobiton group setting](https://docs.kobiton.com//organization-management/automation-for-groups/default-group-setting/). |
+| Field | Required | Type | Description |
+| ----- | -------- | ---- |----------- |
+|Favorite/In-house/Cloud Devices| Yes | Checkbox | The group containing devices that you want to use for automation test.<br> Note: You must choose at least 1 of these 3 options. |
+|Android/iOS Devices| Yes | Checkbox | Mobile device OS that you want to get list. <br>Note: you must choose at least 1 of these 2 options. |
+| Group Id | No | String | The ID of a specific group you want to get devices from.  For GroupID information, you can visit [Kobiton group setting](https://docs.kobiton.com//organization-management/automation-for-groups/default-group-setting/). |
+| Custom Params | No | Object | Filter devices list based on params provided in [Kobiton Api docs](https://api.kobiton.com/docs/#get-all-devices) |
+
+For more details of **Custom Params**, we can select specific devices properties such as device name, device model, device udid, etc. 
+Take an example, we want to select only **Galaxy S8** devices, we can specify in the field as: 
     
-* Custom Params: Kobiton Api supports to get devices list with some specific properties such as device name, device model, device udid, etc. 
-    > Vist our [Api Document](https://api.kobiton.com/docs/#get-all-devices) to have information about the parameters we support. 
+![custom  params](./readme/customparams1.png)
 
-    * Adding a custom parameter:
+* **Output properties**: If you want to use the output from this task to the next task, you need to create a variable to save the list of devices.
 
-    | Step | Image | 
-    | ---- | ----- |
-    | Visit Api document above to get the right parameter's name | <img src="./readme/apiGetDevices.png" alt="apiGetDevices" width="400"> |
-    | Input the parameter name in `Key` and its value | <img src="./readme/customparams0.png" alt="customparams0" width="400"> |
-    | Press `Add` to apply this properties |  <img src="./readme/customparams1.png" alt="customparams1" width="400"> |
-    | Result | <img src="./readme/customparams2.png" alt="customparams2" width="400"> |
+> Note: please choose some specific devices by using custom params. Because the next task will pick all devices in this output to execute test one by one. 
 
-* Output Properties: If you want to use the output from this task to the next task, you need to create a variable to save the list of devices.
-
-    > Note: please choose some specific devices by using custom params. Because the next task will pick all devices in this output to execute test one by one. 
-
-    | Step | Image | 
-    | ---- | ----- |
-    | Type in textbox the variable's name you want to save | <img src="./readme/outputlist0.png" alt="outputlist0" width="400"> |
-    | Click at the row below `${} Create a new varaible of type key-value map` to create varaible |  <img src="./readme/outputlist1.png" alt="outputlist1" width="400"> |
-    | Result | <img src="./readme/outputlist2.png" alt="outputlist2" width="400"> |
+| Step | Image | 
+| ---- | ----- |
+| Type in textbox the variable's name you want to save | ![output list](./readme/outputlist0.png) |
+| Click at the row below `${} Create a new varaible of type key-value map` to create varaible |  ![output list](./readme/outputlist1.png) |
+| Result | ![output list](./readme/outputlist2.png) |
 
 When properties are filled, update your task's information as your need: start date, due date, assignees, watchers, etc. 
 
 Finally, you just close the task window, it will autosave. 
  
 #### 2. Request Execute Test
-This is the task used for Automated test execution. 
+This is the task used for requesting Kobiton server to execute your test. 
 
-<img src="./readme/execute.png" alt="execute" width="600">
+![Request execute test](./readme/execute.png)
 
 * List available devices: place the output of task 1 (if exist) to this section.
 
@@ -134,76 +124,104 @@ This is the task used for Automated test execution.
     |Input exactly variable you created in task 1 in the textbox |  <img src="./readme/task2param1b.png" alt="task2param1b" width="400"> |
     |Result|<img src="./readme/task2param1c.png" alt="task2param1c" width="400">|
 
-* Input properties
+* **Input properties:**
 
-    | Field | Required | Type | Description |
-    | ----- | -------- | ---- |----------- |
-    |In-house devices udid|No|String|The udid of your private host devices on Kobiton Desktop. Visit our [document](https://docs.kobiton.com/device-lab-management/kobiton-desktop-app/getting-started-desktop-app/) for more detail about self host devices. |
-    |Capture Screenshots|No|Tickbox|Screenshots will be stored on our session detail of [portal](https://portal.kobiton.com/sessions) if you select this section. |
-    |Orientation|Yes|Selection|Start app as landscape or portrait.|
-    |Test execution type|Yes|Selection|Execute an automation test on app or browser|
-    |Browser|No|Selection|Type of browser: Chrome (android) or Safari (iOs). Required if you chose to test on browser.|
-    |App URL/App ID|Yes|String|Your app's public URL or Kobiton App ID. Required if you chose to test on apps.|
-    |Group ID|No|String|The ID of a specific group you want to get devices from. Default, it will be "Default Group". For GroupID information, you can visit [Kobiton group setting](https://docs.kobiton.com//organization-management/automation-for-groups/default-group-setting/).|
-    |Git repository|Yes|String|URL to your Git repository that contains automation test scripts.|
-    |Execute branch|No|String|Select the branch contain your script because you cannot switch branch after cloning. Default branch is master.|
-    |Private repository SSH Key|Yes|String|Copy whole of file of your private SSH key and paste to this section.|
-    |Commands|Yes|Yaml syntax|Input commands needed to execute your test script.|
+| Field | Required | Type | Description |
+| ----- | -------- | ---- |----------- |
+|In-house devices udid|No|String|The udid of your private host devices on Kobiton Desktop. Visit our [document](https://docs.kobiton.com/device-lab-management/kobiton-desktop-app/getting-started-desktop-app/) for more detail about self host devices. |
+|Capture Screenshots|No|Checkbox|Screenshots will be stored on our session detail of [portal](https://portal.kobiton.com/sessions) if you select this section. |
+|Orientation|Yes|Selection|Test on devices as landscape or portrait.|
+|Test execution type|Yes|Selection|Execute an automation test on app or browser<br>If you choose **App**, just ignore all the config for browser and the same for the opposite|
+|Browser|No|Selection|Type of browser: Chrome (android) or Safari (iOs). Required if you chose to test on browser.|
+|App URL/App ID|No|String|Your app's public URL or Kobiton App ID. Required if you chose to test on apps.|
+|Group ID|No|String|The ID of a specific group you want to get devices from. For GroupID information, you can visit [Kobiton group setting](https://docs.kobiton.com//organization-management/automation-for-groups/default-group-setting/).|
+|Git repository|Yes|String|URL to your Git repository that contains automation test scripts.|
+|Execute branch|No|String|Select the branch contain your script, default is master.<br>**Note**: You cannot choose other branch the commands fields. |
+|Private repository SSH Key|Yes|String|Copy whole of file of your private SSH key and paste to this section for authenticating with git server.|
+|Commands|Yes|Yaml syntax|Input commands needed to execute your test script.|
 
-    Example: 
+The commands yaml syntax should be:
+```yaml
+commands:
+- The first command
+- The second command
+- ... 
+```
+> **Note:** The location for commands will be at the testscript folder that just added, so you do not need to perform command `"cd ${your-test-script}"`  to go to your test script
 
-    <img src="./readme/exampleExecute.png" alt="exampleExecute" width="600">
+Example: 
+![example request execute](./readme/exampleExecute.png)
 
-* Output properties: You will need to store output in a variable
-for the use of task 3. 
+* **Output properties**: You will need to store output in a variable
+for the use of getting test execution result and logs. 
 
-    | Step | Image | 
-    | ---- | ----- |
-    | Type in textbox the variable's name you want to save | <img src="./readme/outputjob1.png" alt="outputjob1" width="400"> |
-    | Click at the row below `${} Create a new varaible of type key-value map` to create varaible |  <img src="./readme/outputjob2.png" alt="outputjob2" width="400"> |
-    | Result | <img src="./readme/outputjob3.png" alt="outputjob3" width="400"> |
+| Step | Image | 
+| ---- | ----- |
+| Type in textbox the variable's name you want to save | <img src="./readme/outputjob1.png" alt="outputjob1" width="400"> |
+| Click at the row below `${} Create a new varaible of type key-value map` to create varaible |  <img src="./readme/outputjob2.png" alt="outputjob2" width="400"> |
+| Result | <img src="./readme/outputjob3.png" alt="outputjob3" width="400"> |
     
 
 #### 3. Wait for Execution
-This task will collect the result from task 2 to let you know the automated test is pass or fail.
+This task will collect the result from "Request Execute test" task to let you know the automated test is pass or fail.
 
-<img src="./readme/waitforexecute.png" alt="waitforexecute" width="600">
+![Wait for execute](./readme/waitforexecute.png)
 
-* Input properties
+* **Input properties**
 
-    | Field | Required | Type | Description |
-    | ----- | -------- | ---- |----------- |
-    |Job IDs |Yes|Sting| Input the output variable of task 2|
-    |Terminate when failed|No|Tickbox|The release of XL will be terminated if at least 1 failed.| 
+| Field | Required | Type | Description |
+| ----- | -------- | ---- |----------- |
+|Job IDs |Yes|Sting| Input the output variable of "Request Execute test" task |
+|Terminate when failed|No|Checkbox|The release of XL will be terminated if at least 1 session failed .| 
 
-___ 
-## Start release/phrase
+* **Output properties**
 
-When you finish editing your tasks and phrases, you can prress button **Start release** to start your release. 
+The result of the test execution:
 
-<img src="./readme/startrelease.png" alt="startrelease" width="600">
+![sample result](./readme/lastresult2.png)
 
-___
-## Results from tasks
+## Developer Integration guide
 
-Here are some example success output of each task:
+### Setup for development
+Assume the environment is Mac OS
 
-#### 1. List Available Devices
-A list of available devices will be shown here with the Key is device's udid and values are device information. If there is no device  in output, that means there is no available devices match your params at the moment. In that case, please try again later or pick another devices. 
+- Install [Homebrew](https://brew.sh/)
 
-<img src="./readme/outputlist.png" alt="startroutputlistelease" width="600">
+  - Install [Jython](http://brewformulas.org/Jython):
+    ``` shell
+    brew install jython
+    ```
 
-#### 2. Request Execute Test
-The output is the job id, which is used in task 3. If there is nothing in the output, please check if devices-list exists or not. Moreover, you can download the task's log in the attachment section in order to get detail information.
+  - Install [Gradle](https://gradle.org/install/): 
+    ``` shell
+    brew install gradle
+    ```
 
-<img src="./readme/outputexecute.png" alt="outputexecute" width="600">
+- Install [JDK 1.7](http://www.oracle.com/technetwork/java/javase/downloads/java-archive-downloads-javase7-521261.html)
 
-#### 3. Wait for Execution
 
-After execution the test script, you will know if the test can be executed or not.
+### Executing: 
+``` shell
+  gradle clean build
+```
 
-<img src="./readme/lastresult1.png" alt="lastresult1" width="600">
+- Copy the `jar` file from **build/libs** into your plugins folder.
 
-In case that the test is execute successfully, you can download the log of test report in the section **Comment**:
+## References
 
-<img src="./readme/lastresult2.png" alt="lastresult2" width="600">
+- [Kobiton](https://kobiton.com/)
+- [Kobiton docs](https://docs.kobiton.com/)
+- [Kobiton API docs](https://api.kobiton.com/docs/)
+
+## Feedback
+
+If you have any issue or further information, follow steps below to request Kobiton for support.
+
+1. Go to https://portal.kobiton.com
+2. In the navigation bar at the top of the page, click `Support`.
+
+![Kobiton Support Button](./readme/support-button.png)
+
+3. Fill in all necessary information and click `Submit`.
+
+![Kobiton Submit Ticket Form](./readme/support-ticket.png)
