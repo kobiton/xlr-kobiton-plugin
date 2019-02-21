@@ -1,17 +1,17 @@
 # The Kobiton plugin for XebiaLabs XL Release product
 
-Kobiton plugin help users to run automation test on Kobiton devices, remotely and automatically from XL release platform. Kobiton plugin can apply for uses:
+Kobiton plugin helps users to run automation test on Kobiton devices, remotely and automatically from XL release platform. Kobiton plugin can apply for uses:
 - Users indie using Kobiton services
 - User hosting private server
-- On-Premises.
+- On-Premises
 
-For the current version, Kobiton plugin just support executing test through tasks in a **Release** job in XL Release. 
+For the current version, Kobiton plugin just supports executing test through tasks in a **Release** job in XL Release. 
 
 ## Featured tasks
 From the plugin, we provided features to execute automation test easier:
 - Get list available devices: Filter and fetch data of devices that users can access in Kobiton 
 - Request execute test: Request and execute test on provided devices data and test script in Kobiton system
-- Wait for execution: Fetch result and log from requested test.
+- Wait for execution: Fetch result and log from requested test
 
 ## Preparation
 ### A. Getting Kobiton Username and API key
@@ -23,9 +23,9 @@ To get your Kobiton Username and API Key, please follow instructions at `IV. Con
 
 ### B. Getting SSH key for private repository 
 
-For executing test, Kobiton plugin require test script to be stored in **git** repository and Kobiton must have permission to access and clone the script to local for executing.
+For executing test, Kobiton plugin requires test script to be stored in **git** repository and Kobiton must have permission to access and clone the script to local for executing.
 
-> Note: All of your private information such as test script, sshkey, etc. will be deleted after processing is completed. 
+> Note: All of your private information such as test scripts, ssh key, etc. will be deleted after processing is completed. 
 
 - **For user using test script in public repository**: Use the http link directly to the git input field (we will show in the `**request executing test** task)
 
